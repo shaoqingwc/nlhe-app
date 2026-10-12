@@ -67,10 +67,10 @@
   /* 详细数据表 */
   .opp-detail-wrap { display: none; margin-top: 12px; overflow-x: auto; border-top: 1px dashed #333; padding-top: 12px; }
   .opp-detail-wrap.open { display: block; }
-  .opp-table { min-width: 1500px; border-collapse: collapse; font-size: 11px; }
+  .opp-table { min-width: 800px; border-collapse: collapse; font-size: 11px; }
   .opp-table th { background: #1f1f1f; color: #aaa; padding: 5px 3px; text-align: center; border: 1px solid #333; font-weight: 600; font-size: 10px; white-space: nowrap; }
   .opp-table td { padding: 3px 2px; text-align: center; border: 1px solid #2a2a2a; white-space: nowrap; }
-  .opp-table input { width: 42px; background: #0e0e0e; border: 1px solid #444; color: #eee; border-radius: 3px; padding: 3px 2px; font-size: 11px; text-align: center; outline: none; }
+  .opp-table input { width: 50px; background: #0e0e0e; border: 1px solid #444; color: #eee; border-radius: 3px; padding: 3px 2px; font-size: 11px; text-align: center; outline: none; }
   .opp-table input:focus { border-color: #d4af37; background: #1a1a1a; }
   .opp-tip { font-size: 10px; color: #b8b8b8; text-align: left; padding-left: 6px; max-width: 260px; white-space: normal; line-height: 1.3; }
   .opp-row-inactive { opacity: 0.35; }
@@ -78,7 +78,7 @@
 
   .main-container { display: flex; flex-direction: column; gap: 14px; align-items: center; justify-content: center; margin: 4px 0; width: 100%; }
 
-  /* ⭐ 选牌器改为浮动弹窗 */
+  /* ⭐ 选牌器浮动弹窗 */
   .card-picker-side { 
     background: #1a1a1a; border: 2px solid #d4af37; border-radius: 14px; padding: 16px; 
     display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -190,7 +190,7 @@
 </head>
 <body>
 <h1>♦ WPK 微扑克 · 职业级剥削策略 ♠</h1>
-<div class="opp-note">⚔️ 真实对战微扑克 · 点选对手类型或手动录入头像数据，AI 自动评估对手类型并给出职业级碾压策略（大胆诈唬 + 翻后偷底池）｜🟟 座位上的黄色数字为筹码，可直接修改</div>
+<div class="opp-note">⚔️ 真实对战微扑克 · 开局立即输入底牌，手动输入对手“入池率”和“胜率”，AI 将根据对手形象和你的行动线，制定合理的价值下注与精准诈唬策略</div>
 
 <div class="key-bar">
   <label>DeepSeek API Key</label>
@@ -207,8 +207,8 @@
 <!-- ============ 对手数据面板（可折叠） ============ -->
 <div class="opp-data-bar">
   <div class="opp-data-header" onclick="toggleOppPanel()">
-    <span class="title">🟟 对手数据设置（可手动输入WPK头像数据）</span>
-    <span class="hint">（点击展开/收起 · 直接点选或手动输入数据，AI 自动评估对手类型）</span>
+    <span class="title">🟟 对手数据设置（WPK 微扑克头像数据）</span>
+    <span class="hint">（点击展开/收起 · 手动输入 WPK 头像上的数据，重点看“入池率”和“胜率”）</span>
     <span class="toggle-icon" id="oppToggleIcon">▼ 展开</span>
   </div>
   <div class="opp-data-body" id="oppDataBody">
@@ -227,18 +227,12 @@
           <tr>
             <th>座位</th>
             <th title="样本手数">手数</th>
-            <th title="入池率">VPIP%</th>
-            <th title="翻前加分率">PFR%</th>
-            <th title="入池后赢的概率">入池胜率%</th>
-            <th title="每手胜率">每手胜率%</th>
-            <th title="激进度">AF</th>
-            <th title="每百手盈利率">bb/100</th>
-            <th title="翻前胜率">翻前胜率%</th>
-            <th title="翻牌率(cbet频率)">翻牌率%</th>
-            <th title="翻牌胜率">翻牌胜率%</th>
-            <th title="All-In胜率">AllIn胜%</th>
+            <th title="入池率">入池率%</th>
+            <th title="胜率（WPK头像数据）">胜率%</th>
+            <th title="激进度">激进度</th>
+            <th title="翻前加注率">翻前加注%</th>
             <th title="摊牌率">摊牌率%</th>
-            <th title="摊牌胜率">摊牌胜%</th>
+            <th title="摊牌胜率">摊牌胜率%</th>
             <th>类型</th>
             <th style="text-align:left;padding-left:8px;">剥削建议</th>
           </tr>
@@ -391,7 +385,7 @@
 
 <script>
 /* ==================================================================
-   对手类型预设（一键设定 13 项数据）
+   对手类型预设（一键设定）
    ================================================================== */
 function emptyStats(){
   return {hands:0,vpip:0,pfr:0,wwsf:0,winRate:0,af:0,bb100:0,
@@ -401,47 +395,47 @@ function emptyStats(){
 const OPP_TYPE_PRESETS = [
   { key:'TAG', name:'紧凶', color:'#3b82f6',
     tip:'尊重其强范围；用位置优势对抗，避免无谓大底池。',
-    stats:{hands:1000,vpip:22,pfr:18,wwsf:45,winRate:12,af:2.4,bb100:5,
+    stats:{hands:1000,vpip:22,pfr:18,wwsf:45,winRate:52,af:2.4,bb100:5,
            preflopWin:10,flopRate:48,flopWin:18,allinWin:52,wtsd:24,wsd:52} },
 
   { key:'LAG', name:'松凶', color:'#a78bfa',
     tip:'让他继续下注，强牌慢打诱导；扩大价值跟注范围，别用空气硬碰。',
-    stats:{hands:800,vpip:38,pfr:28,wwsf:42,winRate:13,af:2.8,bb100:6,
+    stats:{hands:800,vpip:38,pfr:28,wwsf:42,winRate:50,af:2.8,bb100:6,
            preflopWin:14,flopRate:62,flopWin:19,allinWin:50,wtsd:26,wsd:50} },
 
   { key:'NIT', name:'紧弱', color:'#10b981',
     tip:'疯狂偷盲 + 小注 cbet 33%；一旦被反抗立即弃牌。',
-    stats:{hands:600,vpip:15,pfr:11,wwsf:38,winRate:9,af:1.2,bb100:-5,
+    stats:{hands:600,vpip:15,pfr:11,wwsf:38,winRate:48,af:1.2,bb100:-5,
            preflopWin:7,flopRate:30,flopWin:13,allinWin:55,wtsd:22,wsd:48} },
 
   { key:'CALLING_STATION', name:'跟注站', color:'#f59e0b',
     tip:'绝不诈唬！顶对以上加大尺度 75-100%，薄价值三街榨干。',
-    stats:{hands:700,vpip:40,pfr:10,wwsf:32,winRate:9,af:0.6,bb100:-10,
+    stats:{hands:700,vpip:40,pfr:10,wwsf:32,winRate:38,af:0.6,bb100:-10,
            preflopWin:7,flopRate:25,flopWin:11,allinWin:40,wtsd:38,wsd:38} },
 
   { key:'MANIAC', name:'疯狂玩家', color:'#ef4444',
     tip:'强牌慢打等他自己送；扩大抓诈唬；别和空气大战。',
-    stats:{hands:400,vpip:55,pfr:45,wwsf:40,winRate:11,af:4.5,bb100:-5,
+    stats:{hands:400,vpip:55,pfr:45,wwsf:40,winRate:45,af:4.5,bb100:-5,
            preflopWin:16,flopRate:75,flopWin:14,allinWin:45,wtsd:30,wsd:45} },
 
   { key:'WINNER', name:'职业赢家', color:'#10b981',
     tip:'放弃剥削，回到 GTO 基准；避免大底池，别在他身上硬找价值。',
-    stats:{hands:2000,vpip:24,pfr:20,wwsf:47,winRate:15,af:2.8,bb100:18,
+    stats:{hands:2000,vpip:24,pfr:20,wwsf:47,winRate:56,af:2.8,bb100:18,
            preflopWin:11,flopRate:55,flopWin:20,allinWin:55,wtsd:25,wsd:56} },
 
   { key:'EXPLOITABLE', name:'可剥削玩家', color:'#ff8c42',
     tip:'摊牌率仅 12%：河牌大量诈唬（用带 A/K 的阻断牌），多加注反偷。',
-    stats:{hands:500,vpip:28,pfr:20,wwsf:35,winRate:10,af:1.5,bb100:-8,
+    stats:{hands:500,vpip:28,pfr:20,wwsf:35,winRate:45,af:1.5,bb100:-8,
            preflopWin:9,flopRate:40,flopWin:14,allinWin:45,wtsd:12,wsd:45} },
 
   { key:'SUPER_FISH', name:'散财鱼', color:'#f59e0b',
     tip:'顶对以上加大下注 100% 底池，完全禁用诈唬，三街价值榨干。',
-    stats:{hands:400,vpip:48,pfr:8,wwsf:28,winRate:6,af:0.5,bb100:-25,
+    stats:{hands:400,vpip:48,pfr:8,wwsf:28,winRate:30,af:0.5,bb100:-25,
            preflopWin:5,flopRate:20,flopWin:8,allinWin:35,wtsd:40,wsd:30} },
 
   { key:'ROCK', name:'铁岩石', color:'#10b981',
     tip:'疯狂偷盲；一旦被反抗立即弃牌（其摊牌胜率 62%+）。',
-    stats:{hands:900,vpip:14,pfr:10,wwsf:42,winRate:12,af:1.0,bb100:2,
+    stats:{hands:900,vpip:14,pfr:10,wwsf:42,winRate:62,af:1.0,bb100:2,
            preflopWin:8,flopRate:25,flopWin:15,allinWin:58,wtsd:20,wsd:62} },
 
   { key:'UNKNOWN', name:'未知', color:'#888',
@@ -450,7 +444,7 @@ const OPP_TYPE_PRESETS = [
 ];
 
 /* ==================================================================
-   对手类型判断
+   对手类型判断（基于 WPK 微扑克核心数据：入池率 + 胜率）
    ================================================================== */
 function classifyOpponent(stats){
   if(!stats) return { type:'UNKNOWN', name:'未知', color:'#888', tip:'样本不足，按 GTO 基准打' };
@@ -460,73 +454,50 @@ function classifyOpponent(stats){
     if(pre) return { type:pre.key, name:pre.name, color:pre.color, tip:pre.tip };
   }
 
-  if(stats.hands === 0 || (stats.vpip === 0 && stats.af === 0)){
-    return { type:'UNKNOWN', name:'未知', color:'#888', tip:'样本不足，按 GTO 基准打' };
+  // 样本不足 20 手，按未知处理
+  if(!stats.hands || stats.hands < 20){
+    return { type:'UNKNOWN', name:'样本不足', color:'#888', tip:'样本不足，按 GTO 基准打，别做激进偏离' };
   }
-  const v = stats.vpip || 0;
-  const p = stats.pfr  || 0;
-  const af = stats.af  || 0;
-  const wwsf = stats.wwsf || 0;
-  const bb100 = stats.bb100 || 0;
-  const wtsd = stats.wtsd || 0;
-  const wsd = stats.wsd || 0;
-  const allinWin = stats.allinWin || 0;
-  const flopRate = stats.flopRate || 0;
 
-  if(bb100 >= 15){
-    return { type:'WINNER', name:'职业级赢家', color:'#10b981',
-      tip:'对手在赚钱；放弃剥削，回到 GTO 基准，避免大底池' };
+  const v = stats.vpip || 0;       // 入池率
+  const wr = stats.winRate || 0;   // 胜率
+  const af = stats.af || 0;        // 激进度
+  const pfr = stats.pfr || 0;      // 翻前加注率
+  const wtsd = stats.wtsd || 0;    // 摊牌率
+
+  // 核心判定：入池率高 + 胜率低 = 散财鱼
+  if(v >= 40 && wr < 40){
+    return { type:'SUPER_FISH', name:'散财鱼', color:'#f59e0b',
+      tip:'入池率高且胜率低！顶对以上加大下注100%底池，完全禁用诈唬，三街价值榨干' };
   }
-  if(bb100 <= -15 && wwsf < 30){
-    return { type:'SUPER_FISH', name:'超级散财', color:'#f59e0b',
-      tip:'顶对以上加大下注100%底池，完全禁用诈唬，三街价值榨干' };
-  }
+  // 入池率极高 + 激进度高 = 疯狂玩家
   if(v >= 45 && af >= 3){
     return { type:'MANIAC', name:'疯狂玩家', color:'#ef4444',
       tip:'强牌慢打等他自己送；扩大抓诈唬；别和空气大战' };
   }
-  if(v >= 35 && p <= 15){
-    if(wtsd >= 35 || wsd <= 40){
-      return { type:'STATION', name:'铁跟注站', color:'#f59e0b',
-        tip:'绝不诈唬！顶对以上加大尺度75-100%，薄价值三街' };
-    }
-    return { type:'FISH', name:'跟注站', color:'#f59e0b',
-      tip:'扩大价值下注60-80%，减少复杂诈唬' };
+  // 入池率高 + 胜率也高 = 松凶赢家
+  if(v >= 35 && wr >= 55){
+    return { type:'LAG_GOOD', name:'技术型松凶', color:'#a78bfa',
+      tip:'收紧范围，强牌慢打诱导；扩宽抓诈唬但要有阻断牌' };
   }
-  if(v <= 18 && p <= 12){
-    if(wsd >= 60){
-      return { type:'NIT_ROCK', name:'铁岩石', color:'#10b981',
-        tip:'疯狂偷盲；一旦被反抗立即弃牌（摊牌胜率60%+）' };
-    }
-    return { type:'NIT', name:'紧弱岩石', color:'#10b981',
-      tip:'偷盲+小注cbet 33%；河牌诈唬，面对反抗弃牌' };
+  // 入池率低 + 胜率高 = 紧手/岩石
+  if(v <= 20 && wr >= 55){
+    return { type:'NIT_ROCK', name:'铁岩石', color:'#10b981',
+      tip:'疯狂偷盲；一旦被反抗立即弃牌（其胜率高，牌力强）' };
   }
-  if(v >= 30 && p >= 25){
-    if(allinWin >= 55){
-      return { type:'LAG_KILLER', name:'全下狠人', color:'#a78bfa',
-        tip:'全下胜率55%+，只用两对以上和他全下；别用边缘牌冒险' };
-    }
-    if(wwsf >= 45){
-      return { type:'LAG_GOOD', name:'技术型松凶', color:'#a78bfa',
-        tip:'收紧范围，强牌慢打诱导；扩宽抓诈唬但要有阻断牌' };
-    }
-    return { type:'LAG', name:'松凶玩家', color:'#a78bfa',
-      tip:'让他继续下注，强牌不过早赶走；扩大价值跟注范围' };
+  // 入池率低 + 加注多 = 紧凶
+  if(v <= 25 && pfr >= 18){
+    return { type:'TAG', name:'紧凶', color:'#3b82f6',
+      tip:'尊重其强范围，利用位置，对其过度弃牌施压' };
   }
-  if(wsd >= 55){
-    return { type:'TAG_STRONG', name:'摊牌收割机', color:'#3b82f6',
-      tip:'摊牌胜率55%+；避免与他大底池碰撞，用位置优势对抗' };
+  // 入池率高 + 摊牌率高 = 跟注站
+  if(v >= 35 && wtsd >= 35){
+    return { type:'STATION', name:'铁跟注站', color:'#f59e0b',
+      tip:'绝不诈唬！顶对以上加大尺度75-100%，薄价值三街' };
   }
-  if(flopRate >= 55 && af >= 2){
-    return { type:'AGGRO_TAG', name:'高cbet紧凶', color:'#3b82f6',
-      tip:'他翻牌率55%+；用加注反偷，等他check后大注' };
-  }
-  if(wtsd <= 15 && v >= 25){
-    return { type:'FOLDER', name:'易弃牌', color:'#10b981',
-      tip:'他摊牌率仅15%；河牌大量诈唬（用带A/K的阻断牌）' };
-  }
-  return { type:'TAG', name:'紧凶玩家', color:'#3b82f6',
-    tip:'尊重强范围，利用位置，对其过度弃牌施压' };
+  // 入池率一般 + 胜率一般
+  return { type:'TAG', name:'常规玩家', color:'#3b82f6',
+    tip:'标准剥削打法，利用位置优势，寻找机会偷底池' };
 }
 
 /* ==================================================================
@@ -605,7 +576,7 @@ let STACK = 600;
 /* 自动建议开关 + AI 运行标志 */
 let AUTO_ADVICE = true;
 let AI_RUNNING = false;
-let ADVICE_REQUEST_SEQ = 0;   // 用于丢弃过期请求
+let ADVICE_REQUEST_SEQ = 0;
 
 function makeDefaultOppStats(){
   const o = {};
@@ -683,7 +654,6 @@ let G = {
   sbSize:3, bbSize:6, straddleSize:0, anteSize:0, straddleSeat:-1,
   waitingForHero:false,
   oppStats: makeDefaultOppStats(),
-  /* ⭐ 新增：各座位筹码（跨手牌持久） + 摊牌标记 */
   stackBySeat: {},
   showdownRevealed: false,
   autoTrack: {
@@ -695,11 +665,11 @@ let G = {
 };
 let currentDeck = [];
 
-/* ============ ⭐ 筹码相关函数 ============ */
+/* ============ 筹码相关函数 ============ */
 function renderStack(seatIdx){
   const el = document.getElementById('stackInput-' + seatIdx);
   if(!el) return;
-  if(document.activeElement === el) return;   // 正在编辑时不覆盖
+  if(document.activeElement === el) return;
   let v = G.stackBySeat[seatIdx];
   if(v === undefined){
     v = (G.players[seatIdx] && G.players[seatIdx].stack !== undefined) ? G.players[seatIdx].stack : STACK;
@@ -716,7 +686,6 @@ function onStackInputChange(seatIdx, val){
   renderStack(seatIdx);
 }
 
-/** 从某座位筹码中扣除 amount（不超过其现有筹码） */
 function takeFromStack(seatIdx, amount){
   const p = G.players[seatIdx];
   if(!p || !(amount > 0)) return;
@@ -725,7 +694,6 @@ function takeFromStack(seatIdx, amount){
   renderStack(seatIdx);
 }
 
-/** 把底池发给赢家（可多人平分） */
 function awardPot(winners){
   if(!winners || winners.length === 0 || G.pot <= 0) return;
   const total = G.pot;
@@ -750,7 +718,6 @@ function getLastStanding(){
   return -1;
 }
 
-/** 给尚未弃牌的对手随机发牌（摊牌展示用） */
 function drawCard(used){
   const deck = [];
   for(const s of SUITS) for(const r of RANKS) deck.push({rank:r, suit:s.k, sym:s.y, color:s.c});
@@ -831,7 +798,6 @@ function startNewHand(){
   if(!activeSeats.includes(G.dealerSeat)) G.dealerSeat=activeSeats[0];
   assignRoles();
 
-  /* ⭐ 筹码初始化：整局重置后第一手牌按“初始筹码”重新分配，之后保留累积结果 */
   if(G.handCount === 0){
     for(let i=0;i<8;i++) G.stackBySeat[i] = STACK;
   }
@@ -850,7 +816,6 @@ function startNewHand(){
   G.showdownRevealed=false;
   currentDeck=initDeck();
 
-  /* ⭐ 底注 / 盲注 / 抓头 —— 全部从对应座位筹码中实时扣除 */
   let potStart = 0;
   if(G.anteSize > 0){
     for(const s of activeSeats){ takeFromStack(s, G.anteSize); potStart += G.anteSize; }
@@ -888,7 +853,18 @@ function startNewHand(){
   document.getElementById('seat-0').classList.add('my-seat');
   addLog('系统',`===== 第 ${G.handCount} 手牌开始 =====`,'info');
   updateUI();
-  nextActor();
+
+  // ⭐ 开局立即强制要求玩家输入手牌
+  if (G.players[0] && !G.players[0].folded) {
+    G.pickMode = 'hand';
+    G.tempHand = [];
+    G.waitingForHero = true;
+    document.getElementById('waitingOverlay').style.display = 'block';
+    document.getElementById('actionPanel').style.display = 'none';
+    renderCardPicker('hand');
+  } else {
+    nextActor();
+  }
 }
 function rotateAndStart(){
   const activeSeats=getActiveSeats();
@@ -931,7 +907,7 @@ function pickCardFromUI(rank,suit){
       document.getElementById('waitingOverlay').style.display='none';
       G.waitingForHero=false;
       updateUI();
-      showActionPanel(0);
+      nextActor(); // ⭐ 选完牌后，正式开始行动流转
     } else renderCardPicker('hand');
   } else if(G.pickMode==='community'){
     G.tempPickedCards.push(card);
@@ -958,13 +934,6 @@ function nextActor(){
     const seatIdx=G.actorIdx;
     const p=G.players[seatIdx];
     if(G.seatActive[seatIdx]&&p&&!p.folded&&!p.acted){
-      if(seatIdx===0 && p.hand.length<2){
-        G.pickMode='hand'; G.tempHand=[]; G.waitingForHero=true;
-        document.getElementById('waitingOverlay').style.display='block';
-        document.getElementById('actionPanel').style.display='none';
-        renderCardPicker('hand');
-        return;
-      }
       showActionPanel(seatIdx);
       return;
     }
@@ -991,7 +960,7 @@ function showActionPanel(seatIdx){
   document.querySelectorAll('.seat').forEach(el=>el.classList.remove('active-seat'));
   const seatEl=document.getElementById('seat-'+seatIdx); if(seatEl) seatEl.classList.add('active-seat');
 
-  /* ⭐ 关键：轮到玩家（座位0）时自动请求 AI 建议 */
+  /* 轮到玩家（座位0）时自动请求 AI 建议 */
   if(seatIdx === 0 && AUTO_ADVICE && G.players[0].hand.length >= 2){
     if(AI_RUNNING){ ADVICE_REQUEST_SEQ++; }
     setTimeout(() => { if(AUTO_ADVICE) getAIAdvice(false); }, 150);
@@ -999,7 +968,7 @@ function showActionPanel(seatIdx){
 }
 
 /* ==================================================================
-   下注/加注预设：WPK 3/6 盲注，OPEN 5个大盲起
+   下注/加注预设
    ================================================================== */
 function showRaiseArea(seatIdx){
   const ra = document.getElementById('raiseArea');
@@ -1026,7 +995,6 @@ function showRaiseArea(seatIdx){
   const list = [];
 
   if (G.street === 'preflop') {
-    // WPK 微扑克特性：OPEN 通常是 5 个大盲（5 * bbSize）
     [5, 6, 7, 8].forEach(m => {
       const v = round1(G.bbSize * m);
       if (v >= minTotal && v <= maxTotal) list.push({ label: `${m} BB(${v.toFixed(0)})`, amt: v });
@@ -1160,7 +1128,6 @@ function advanceStreet(){
   }
 }
 
-/* ⭐ 摊牌结算 */
 function resolveShowdown(){
   dealMissingHands();
   revealAllHands();
@@ -1238,22 +1205,16 @@ function addLog(seatIdx,text,type){
 function clickSeat(seatIdx){}
 
 /* ==================================================================
-   对手类型面板渲染
+   对手类型面板渲染（精简版）
    ================================================================== */
 const OPP_FIELDS = [
-  {key:'hands',      label:'手数',     min:0,   max:99999, step:1,   w:40},
-  {key:'vpip',       label:'入池率',   min:0,   max:100,   step:1,   w:40},
-  {key:'pfr',        label:'翻前加注', min:0,   max:100,   step:1,   w:40},
-  {key:'wwsf',       label:'入池胜率', min:0,   max:100,   step:1,   w:42},
-  {key:'winRate',    label:'每手胜率', min:0,   max:100,   step:1,   w:42},
-  {key:'af',         label:'激进度',   min:0,   max:20,    step:0.1, w:40},
-  {key:'bb100',      label:'bb/100',   min:-200,max:200,   step:1,   w:46},
-  {key:'preflopWin', label:'翻前胜率', min:0,   max:100,   step:1,   w:42},
-  {key:'flopRate',   label:'翻牌率',   min:0,   max:100,   step:1,   w:42},
-  {key:'flopWin',    label:'翻牌胜率', min:0,   max:100,   step:1,   w:42},
-  {key:'allinWin',   label:'AllIn胜率',min:0,   max:100,   step:1,   w:42},
-  {key:'wtsd',       label:'摊牌率',   min:0,   max:100,   step:1,   w:42},
-  {key:'wsd',        label:'摊牌胜率', min:0,   max:100,   step:1,   w:42}
+  {key:'hands',      label:'手数',     min:0,   max:99999, step:1,   w:45},
+  {key:'vpip',       label:'入池率%',  min:0,   max:100,   step:1,   w:55},
+  {key:'winRate',    label:'胜率%',    min:0,   max:100,   step:1,   w:55},
+  {key:'af',         label:'激进度',   min:0,   max:20,    step:0.1, w:45},
+  {key:'pfr',        label:'翻前加注%',min:0,   max:100,   step:1,   w:55},
+  {key:'wtsd',       label:'摊牌率%',  min:0,   max:100,   step:1,   w:55},
+  {key:'wsd',        label:'摊牌胜率%',min:0,   max:100,   step:1,   w:55}
 ];
 
 function renderOppPanel(){
@@ -1429,10 +1390,8 @@ function buildSituationText() {
     if (!st || (st.hands === 0 && st.vpip === 0 && !st.presetKey)) continue;
     const info = classifyOpponent(st);
     oppProfiles += `  ▶ 座位${i} [${G.roles[i]||'—'}] → ${info.name}\n`;
-    oppProfiles += `      手数=${st.hands} 入池率=${st.vpip}% 翻前加注=${st.pfr}% 激进度=${st.af}\n`;
-    oppProfiles += `      入池胜率=${st.wwsf}% 每手胜率=${st.winRate}% 每百手=${st.bb100}bb\n`;
-    oppProfiles += `      翻前胜率=${st.preflopWin}% 翻牌率=${st.flopRate}% 翻牌胜率=${st.flopWin}%\n`;
-    oppProfiles += `      AllIn胜率=${st.allinWin}% 摊牌率=${st.wtsd}% 摊牌胜率=${st.wsd}%\n`;
+    oppProfiles += `      手数=${st.hands} 入池率=${st.vpip}% 胜率=${st.winRate}%\n`;
+    oppProfiles += `      激进度=${st.af} 翻前加注=${st.pfr}% 摊牌率=${st.wtsd}% 摊牌胜率=${st.wsd}%\n`;
     oppProfiles += `      剥削点：${info.tip}\n`;
   }
   if (!oppProfiles) oppProfiles = '  （未设置对手数据，按 GTO 基准）\n';
@@ -1440,7 +1399,7 @@ function buildSituationText() {
   const currentActor = G.roles[G.actorIdx] ? `座位${G.actorIdx}（${G.roles[G.actorIdx]}）` : '无';
 
   return `【WPK 微扑克 8-Max NLHE 局面 · 对手为普通玩家】
-⚠️ 注意：当前对手为微扑克平台普通玩家（大概率无 GTO 基础），你是职业级牌手。你的策略应偏向“职业级碾压”，大胆使用诈唬，在翻后根据牌面和对手数据积极寻找机会偷底池！
+⚠️ 注意：当前对手为微扑克平台普通玩家。你的策略应基于对手的数据画像和你的行动线进行合理剥削，拒绝无逻辑的乱诈唬。
 
 ▶ 我的手牌: ${heroHandText}
 ▶ 我的位置: ${role} ${heroIP ? '(IP 有位置)' : '(OOP 无位置)'}
@@ -1465,50 +1424,50 @@ ${oppProfiles}
 ${historyText}`;
 }
 
-const SYSTEM_PROMPT = `你是一名职业级别 NLHE 现金局牌手，专精 8-Max 100BB 深度，同时精通 GTO 基准与针对真实线上玩家的剥削性偏离。
+const SYSTEM_PROMPT = `你是一名职业级别 NLHE 现金局牌手，专精 8-Max 100BB 深度，精通 GTO 基准与针对真实线上玩家的剥削性偏离。
 
 【当前环境】WPK 微扑克现金局（3/6盲注，OPEN 通常为 5个大盲 = 30）。
-【核心定位】你面对的是普通玩家（大概率无 GTO 基础）。你的任务是进行“职业级碾压”，必须积极寻找机会诈唬，在翻后利用位置和牌面结构偷底池。
+【核心定位】你面对的是普通玩家。你的任务是进行“职业级剥削”，但**诈唬必须基于逻辑**，不能乱开火。必须结合对手数据（尤其是入池率和胜率）以及你自己的行动线来做出决策。
 
 【对手数据字段解读（来自 WPK 微扑克头像面板）】
-- 手数：样本量，<30手时以GTO为主，>50手放心剥削
-- 入池率(VPIP)：>35松 <18紧
-- 翻前加注(PFR)：VPIP-PFR差值>15 → 被动跟注站（多用大尺度价值下注）
-- 入池胜率(wwsf)：入池后赢的概率，<30%散财鱼
-- 每手胜率：<10%差 >15%好
+- 手数：样本量，<20手时以GTO为主，>50手放心剥削
+- 入池率(VPIP)：>40松 <20紧
+- 胜率：结合入池率看。入池率高+胜率低=鱼；入池率低+胜率高=紧手/岩石
 - 激进度(AF)：>3凶 <1被动
-- bb/100：实际盈利率，>15强赢家 <-15大鱼
-- 翻前胜率：<8%翻前范围太松
-- 翻牌率(cbet)：>55%爱cbet <30%被动
-- 翻牌胜率：翻牌打赢概率
-- AllIn胜率：>55%全下范围紧 <45%全下范围松
+- 翻前加注(PFR)：VPIP-PFR差值>15 → 被动跟注站
 - 摊牌率(WTSD)：<15%爱弃牌 >35%爱摊牌
 - 摊牌胜率(W$SD)：>55%摊牌时牌力强
 
 【核心剥削决策】
-1. bb/100 >= 15 → 尊重对手，回归GTO，避免大底池
-2. bb/100 <= -15 且入池胜率<30% → 加大价值100%底池，禁用诈唬
-3. 摊牌率 <= 15% → 疯狂诈唬（带A/K或坚果阻断牌），河牌重锤
-4. 摊牌率 >= 35% → 绝不诈唬，只打价值（顶对薄价值打三街）
-5. AllIn胜率 <= 45% → 扩大抓全下范围
-6. AllIn胜率 >= 55% → 只用两对以上应战
-7. 翻牌率 >= 55% → 加注反偷（Raise C-bet）
-8. 翻牌率 <= 30% → 主动下注抢底池（Donk bet）
-9. 摊牌胜率 >= 55% → 尊重其摊牌牌力
-10. 摊牌胜率 <= 35% → 扩大薄价值下注
-11. VPIP高+PFR低(差>15) → 加价值、少诈唬
-12. VPIP低(<18) → 疯狂偷盲、小注cbet、河牌诈唬
+1. 入池率高(>40%)+胜率低(<40%) → 散财鱼。**严禁诈唬**，只打价值。顶对以上加大下注100%底池，三街榨干。
+2. 入池率高(>35%)+摊牌率高(>35%) → 铁跟注站。**严禁诈唬**！顶对以上加大尺度75-100%。
+3. 入池率低(<20%)+胜率高(>55%) → 铁岩石。**可以增加诈唬频率**，疯狂偷盲；一旦被反抗立即弃牌。
+4. 入池率高(>45%)+激进度高(>3) → 疯狂玩家。强牌慢打等他自己送；扩大抓诈唬。
+5. 入池率低(<25%)+翻前加注高(>18%) → 紧凶。尊重其强范围，利用位置，对其过度弃牌施压。
+6. 摊牌率 <= 15% → 对手爱弃牌，**可以增加诈唬频率**（带A/K或坚果阻断牌），河牌重锤。
+7. 摊牌率 >= 35% → 对手爱摊牌，**绝对减少诈唬**，只打价值。
+
+【合理诈唬的三大条件（必须满足至少两项）】
+1. **对手有弃牌倾向**：对手入池率低、摊牌率低、或面对大注时容易弃牌。
+2. **你的行动线连贯**：你翻前加注，翻牌持续下注(cbet)，转牌/河牌继续开火，代表极强的牌力（如顶对、超对、坚果）。不要在没有故事线的情况下突然加注。
+3. **具备阻断牌或听牌**：用带A/K的阻断牌诈唬，或者你有坚果听牌但暂时落后。
+4. **位置优势**：有位置时更容易偷池，无位置时谨慎诈唬。
+
+【何时放弃诈唬】
+- 对手是跟注站/散财鱼（入池率高、胜率低），绝不诈唬。
+- 牌面非常湿润，容易击中对手的范围。
+- 你被跟注后，转牌/河牌是危险牌（比如出公对面、出顺子面）。
+- 你的筹码很深，但底池很小，风险收益比不划算。
 
 【决策框架】
 - SPR<3 顶对以上可全下；SPR 3-6 顶对打两街；SPR>6 只打两对以上价值
 - 翻前按位置：UTG~15%，BTN~45%（OPEN尺度建议5BB，即30）
 - 翻后按牌面：A高干燥→33%；K高干燥→33-50%；湿润面→66-75%极化
-- 阻断牌：诈唬时优先用带A/K或带坚果听牌的阻断牌
-- 职业级碾压：如果你的手牌有潜力，不要害怕大尺度下注和加注，给对手施加最大压力。
+- 价值下注尺度：面对鱼和跟注站，用大尺度（75-100%）榨取价值。
 
 【输出格式】严格按此格式（不要多余解释）：
 行动：<弃牌|过牌|跟注XBB|下注XBB|加注到XBB|全下>
-理由：<3行以内，写清对手类型+关键数据依据+SPR+牌面+尺度依据>
+理由：<3行以内，写清对手类型+关键数据依据+SPR+牌面+行动线+尺度依据>
 置信度：<0-100>`;
 
 function parseSSEBuffer(buffer, onDelta){
@@ -1719,7 +1678,7 @@ function resetAll(){
 loadApiKey();
 renderOppPanel();
 updateUI();
-console.log('WPK 微扑克 · 职业级剥削策略（适配 iPad 全屏/弹出选牌器/针对WPK自定义）已加载');
+console.log('WPK 微扑克 · 职业级剥削策略（合理诈唬逻辑 + 对手形象匹配 + 行动线连贯性）已加载');
 </script>
 </body>
 </html>
