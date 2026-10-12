@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NLHE建议">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0b0b0b">
+<title>NLHE 极简建议 · 疯鱼版</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    width: 100%; background: #0b0b0b; color: #eee;
+    font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; overscroll-behavior-y: none;
+  }
+  body { padding: 12px 12px calc(20px + env(safe-area-inset-bottom)); padding-top: calc(12px + env(safe-area-inset-top)); }
+
+  .opp-banner {
+    background: linear-gradient(135deg, #7c2d12, #431407);
+    border: 1px solid #f59e0b; border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 12px;
+    font-size: 13px; color: #fbbf24; text-align: center; line-height: 1.5;
+  }
+  .opp-banner b { color: #f59e0b; }
+
+  .key-strip {
+    display: flex; align-items: center; gap: 8px;
+    background: #1a1a2e; border: 1px solid #7c3aed; border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 12px; font-size: 14px; cursor: pointer;
+  }
+  .key-strip .dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
+  .key-strip .dot.ok { background: #10b981; }
+  .key-strip .txt { flex: 1; color: #aaa; font-size: 13px; }
+  .key-strip .arrow { color: #7c3aed; font-size: 18px; font-weight: 900; }
+
+  .key-panel { display: none; background: #161616; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+  .key-panel.open { display: block; }
+  .key-panel input {
+    width: 100%; background: #0e0e0e; border: 1px solid #444; color: #eee;
+    border-radius: 8px; padding: 14px 12px; font-size: 16px; font-family: monospace;
+    outline: none; margin-bottom: 8px; -webkit-appearance: none;
+  }
+  .key-panel input:focus { border-color: #7c3aed; }
+  .key-panel .row { display: flex; gap: 8px; }
+  .key-panel button {
+    flex: 1; padding: 14px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 700; cursor: pointer; background: #d4af37; color: #000; -webkit-appearance: none;
+  }
+  .key-panel button:active { filter: brightness(0.8); }
+  .key-status { font-size: 12px; color: #a78bfa; margin-top: 6px; min-height: 16px; text-align: center; }
+
+  .section { background: #161616; border: 1px solid #333; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .section-title {
+    font-size: 15px; color: #d4af37; font-weight: 800; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title .hint { font-size: 12px; color: #888; font-weight: 400; }
+
+  .cards-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .card-slot {
+    width: 78px; height: 108px; border-radius: 10px; border: 2px dashed #444;
+    background: #0e0e0e; display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 900; color: #555; cursor: pointer; transition: .15s; flex-shrink: 0;
+  }
+  .card-slot:active { transform: scale(0.95); border-color: #d4af37; }
+  .card-slot.filled { border-style: solid; border-color: #d4af37; background: linear-gradient(145deg, #1a1a1a, #2d2d2d); }
+  .card-slot.red { color: #ff6b6b; border-color: #ff6b6b; }
+  .card-slot.blk { color: #f0f0f0; border-color: #d4af37; }
+  .card-slot .rank { font-size: 34px; line-height: 1; }
+  .card-slot .suit { font-size: 26px; line-height: 1; margin-top: 2px; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .type-btn {
+    padding: 11px 6px; border-radius: 10px; border: 2px solid #444;
+    background: #0e0e0e; color: #bbb; font-size: 13px; font-weight: 800;
+    cursor: pointer; -webkit-appearance: none; line-height: 1.3; text-align: center;
+    transition: .15s;
+  }
+  .type-btn .emo { font-size: 19px; display: block; margin-bottom: 2px; }
+  .type-btn.active { border-color: #d4af37; background: linear-gradient(145deg, #d4af37, #a8821f); color: #000; }
+
+  .hud-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 12px; }
+  .hud-item { display: flex; flex-direction: column; gap: 4px; }
+  .hud-item label { font-size: 11px; color: #888; text-align: center; }
+  .hud-item input {
+    width: 100%; background: #0e0e0e; border: 1px solid #444; color: #eee;
+    border-radius: 6px; padding: 10px 2px; font-size: 14px; text-align: center;
+    outline: none; -webkit-appearance: none; font-family: monospace;
+  }
+  .hud-item input:focus { border-color: #d4af37; }
+
+  .mini-btn {
+    width: 100%; margin-top: 10px; padding: 12px; border: none; border-radius: 8px;
+    background: #0e7490; color: #fff; font-size: 14px; font-weight: 800;
+    cursor: pointer; -webkit-appearance: none;
+  }
+  .mini-btn:active { filter: brightness(1.2); }
+
+  .type-result {
+    margin-top: 10px; padding: 10px; border-radius: 8px;
+    background: #0e0e0e; border: 1px solid #333; font-size: 13px;
+    color: #a78bfa; line-height: 1.55; text-align: center; min-height: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .type-result b { color: #d4af37; }
+
+  .pos-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .pos-btn {
+    flex: 1; min-width: 56px; padding: 14px 4px; border-radius: 8px;
+    border: 2px solid #444; background: #0e0e0e; color: #aaa;
+    font-size: 15px; font-weight: 800; cursor: pointer; -webkit-appearance: none;
+  }
+  .pos-btn.active { border-color: #d4af37; background: #d4af37; color: #000; }
+
+  .stack-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .stack-row label { font-size: 13px; color: #aaa; white-space: nowrap; width: 70px; }
+  .stack-row input {
+    flex: 1; background: #0e0e0e; border: 1px solid #444; color: #eee;
+    border-radius: 8px; padding: 12px; font-size: 16px; outline: none;
+    text-align: center; -webkit-appearance: none;
+  }
+  .stack-row input:focus { border-color: #d4af37; }
+  .stack-row .unit { font-size: 13px; color: #888; width: 22px; }
+
+  .pot-row { display: flex; align-items: center; gap: 8px; }
+  .pot-row label { font-size: 14px; color: #aaa; white-space: nowrap; }
+  .pot-row input {
+    flex: 1; background: #0e0e0e; border: 1px solid #444; color: #eee;
+    border-radius: 8px; padding: 12px; font-size: 16px; outline: none;
+    text-align: center; -webkit-appearance: none;
+  }
+  .pot-row input:focus { border-color: #d4af37; }
+  .pot-row .unit { font-size: 14px; color: #888; }
+
+  .spr-info {
+    margin-top: 10px; padding: 8px; border-radius: 8px; background: #0e0e0e;
+    border: 1px solid #2a2a2a; font-size: 12px; color: #7dd3fc; text-align: center;
+  }
+  .spr-info b { color: #d4af37; }
+  .spr-info.warn { color: #fbbf24; border-color: #78350f; }
+
+  .auto-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #161616; border: 1px solid #333; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 12px; font-size: 14px; color: #ccc;
+  }
+  .switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; background: #444; border-radius: 30px;
+    transition: .2s; cursor: pointer;
+  }
+  .slider:before {
+    content: ''; position: absolute; height: 22px; width: 22px; left: 4px; top: 4px;
+    background: #fff; border-radius: 50%; transition: .2s;
+  }
+  .switch input:checked + .slider { background: #7c3aed; }
+  .switch input:checked + .slider:before { transform: translateX(22px); }
+
+  .big-btn {
+    width: 100%; padding: 20px; border: none; border-radius: 14px;
+    font-size: 20px; font-weight: 900; letter-spacing: 1px; cursor: pointer;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff;
+    -webkit-appearance: none; transition: .15s; box-shadow: 0 6px 20px rgba(124,58,237,.4);
+  }
+  .big-btn:active { transform: scale(0.97); filter: brightness(1.15); }
+  .big-btn:disabled { opacity: .5; }
+
+  .clear-btn {
+    padding: 14px 20px; border: 1px solid #444; border-radius: 10px;
+    background: #1a1a1a; color: #aaa; font-size: 15px; font-weight: 700;
+    cursor: pointer; -webkit-appearance: none; margin-top: 8px; width: 100%;
+  }
+  .clear-btn:active { background: #333; color: #fff; }
+
+  .popup-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.85);
+    z-index: 900; display: none; align-items: center; justify-content: center;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+  .popup-overlay.show { display: flex; }
+  .popup-card {
+    width: 100%; max-width: 460px; max-height: 100%;
+    background: linear-gradient(135deg, #1a1a2e, #141428);
+    border: 2px solid #7c3aed; border-radius: 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(124,58,237,.5);
+    animation: popIn .22s ease-out;
+  }
+  @keyframes popIn { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .popup-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid #2a2a3e;
+  }
+  .popup-title { font-size: 15px; font-weight: 800; color: #a78bfa; }
+  .popup-close {
+    width: 38px; height: 38px; border-radius: 50%; border: 2px solid #555;
+    background: #222; color: #fff; font-size: 18px; font-weight: 900;
+    cursor: pointer; -webkit-appearance: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .popup-close:active { background: #d4af37; color: #000; }
+  .popup-body { padding: 20px 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  .advice-action {
+    font-size: 32px; font-weight: 900; color: #d4af37;
+    text-align: center; line-height: 1.3; margin-bottom: 14px;
+  }
+  .advice-detail { font-size: 15px; color: #c8c8c8; line-height: 1.65; white-space: pre-wrap; }
+  .advice-loading { font-size: 19px; color: #a78bfa; text-align: center; font-weight: 700; padding: 20px 0; }
+  .advice-error { font-size: 14px; color: #ef4444; text-align: center; line-height: 1.6; padding: 10px 0; }
+  .advice-meta {
+    margin-top: 16px; padding-top: 12px; border-top: 1px solid #2a2a3e;
+    font-size: 12px; color: #666; line-height: 1.6;
+  }
+
+  .picker-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 1000;
+    display: none; flex-direction: column; padding: 12px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+  .picker-overlay.show { display: flex; }
+  .picker-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .picker-title { font-size: 17px; color: #d4af37; font-weight: 800; }
+  .picker-close {
+    width: 44px; height: 44px; border-radius: 50%; border: 2px solid #555;
+    background: #222; color: #fff; font-size: 22px; font-weight: 900;
+    cursor: pointer; -webkit-appearance: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .picker-close:active { background: #d4af37; color: #000; }
+  .picker-grid {
+    flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .picker-col { display: flex; flex-direction: column; gap: 6px; }
+  .picker-suit-head {
+    text-align: center; font-size: 30px; font-weight: 900; padding: 8px 0;
+    border-bottom: 2px solid #444; margin-bottom: 4px;
+  }
+  .picker-suit-head.red { color: #ff6b6b; }
+  .picker-suit-head.blk { color: #eee; }
+  .picker-btn {
+    padding: 16px 0; border-radius: 8px; border: 2px solid #333; background: #1a1a1a;
+    font-size: 20px; font-weight: 800; cursor: pointer; -webkit-appearance: none;
+    text-align: center; line-height: 1; min-height: 52px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .picker-btn.red { color: #ff6b6b; }
+  .picker-btn.blk { color: #f0f0f0; }
+  .picker-btn:active { background: #333; border-color: #d4af37; }
+  .picker-btn.used { opacity: 0.2; pointer-events: none; }
+  .picker-btn .r { font-size: 22px; font-weight: 900; }
+  .picker-btn .s { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="opp-banner" id="oppBanner">
+  🎯 对手模型：<b id="oppBannerName">买牌铁头疯鱼</b><br>
+  <span id="oppBannerDesc">爱追听 · 不弃牌 · 偶尔乱加 —— 价值最大化，绝不诈唬</span>
+</div>
+
+<div class="key-strip" onclick="toggleKeyPanel()">
+  <div class="dot" id="keyDot"></div>
+  <div class="txt" id="keyStripText">点击设置 API Key</div>
+  <div class="arrow" id="keyArrow">▼</div>
+</div>
+
+<div class="key-panel" id="keyPanel">
+  <input type="text" id="apiKeyInput" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <div class="row">
+    <button onclick="saveApiKey()">💾 保存</button>
+    <button onclick="testApi()" style="background:#0e7490;color:#fff">🔌 测试</button>
+  </div>
+  <div class="key-status" id="keyStatus"></div>
+</div>
+
+<!-- ============ 盲注结构 ============ -->
+<div class="section">
+  <div class="section-title">
+    🎲 盲注结构
+    <span class="hint">有前注时自动调整判断</span>
+  </div>
+  <div class="stack-row">
+    <label>前注/抓头</label>
+    <input type="number" id="anteInput" inputmode="decimal" step="0.05" min="0" placeholder="例如 0.25">
+    <span class="unit">BB</span>
+  </div>
+  <div class="spr-info" id="blindInfo">无前注 · 标准判断阈值</div>
+</div>
+
+<!-- ============ 对手类型 ============ -->
+<div class="section">
+  <div class="section-title">
+    🎭 对手类型
+    <span class="hint">一键预设 或 填数据判断</span>
+  </div>
+  <div class="type-grid" id="typeGrid"></div>
+
+  <div class="hud-grid">
+    <div class="hud-item"><label>入池率%</label><input type="number" id="hudVpip" inputmode="decimal" step="1" min="0" max="100" placeholder="—"></div>
+    <div class="hud-item"><label>翻前加注%</label><input type="number" id="hudPfr" inputmode="decimal" step="1" min="0" max="100" placeholder="—"></div>
+    <div class="hud-item"><label>3Bet%</label><input type="number" id="hud3bet" inputmode="decimal" step="0.1" min="0" max="100" placeholder="—"></div>
+    <div class="hud-item"><label>激进度</label><input type="number" id="hudAf" inputmode="decimal" step="0.1" min="0" max="20" placeholder="—"></div>
+    <div class="hud-item"><label>摊牌率%</label><input type="number" id="hudWtsd" inputmode="decimal" step="1" min="0" max="100" placeholder="—"></div>
+  </div>
+  <button class="mini-btn" onclick="judgeByHud()">🧠 根据数据判断类型</button>
+  <div class="type-result" id="typeResult">未选择对手类型</div>
+</div>
+
+<!-- ============ 筹码量 ============ -->
+<div class="section">
+  <div class="section-title">
+    💵 筹码量
+    <span class="hint">不随清空重置</span>
+  </div>
+  <div class="stack-row">
+    <label>我</label>
+    <input type="number" id="heroStack" inputmode="decimal" step="5" min="0" placeholder="100">
+    <span class="unit">BB</span>
+  </div>
+  <div class="stack-row">
+    <label>对手</label>
+    <input type="number" id="villainStack" inputmode="decimal" step="5" min="0" placeholder="100">
+    <span class="unit">BB</span>
+  </div>
+  <div class="spr-info" id="sprInfo">SPR：—</div>
+</div>
+
+<!-- ============ 我的手牌 ============ -->
+<div class="section">
+  <div class="section-title">
+    🎴 我的手牌
+    <span class="hint">选满 2 张自动出建议</span>
+  </div>
+  <div class="cards-row" id="handSlots">
+    <div class="card-slot" data-idx="0" onclick="openPicker('hand', 0)">?</div>
+    <div class="card-slot" data-idx="1" onclick="openPicker('hand', 1)">?</div>
+  </div>
+</div>
+
+<!-- ============ 公共牌 ============ -->
+<div class="section">
+  <div class="section-title">
+    🃏 公共牌
+    <span class="hint">翻牌 3 张 / 转牌 / 河牌</span>
+  </div>
+  <div class="cards-row" id="boardSlots">
+    <div class="card-slot" data-idx="0" onclick="openPicker('board', 0)" style="width:64px;height:88px">—</div>
+    <div class="card-slot" data-idx="1" onclick="openPicker('board', 1)" style="width:64px;height:88px">—</div>
+    <div class="card-slot" data-idx="2" onclick="openPicker('board', 2)" style="width:64px;height:88px">—</div>
+    <div class="card-slot" data-idx="3" onclick="openPicker('board', 3)" style="width:64px;height:88px">—</div>
+    <div class="card-slot" data-idx="4" onclick="openPicker('board', 4)" style="width:64px;height:88px">—</div>
+  </div>
+</div>
+
+<!-- ============ 位置 ============ -->
+<div class="section">
+  <div class="section-title">📍 我的位置</div>
+  <div class="pos-row" id="posRow"></div>
+</div>
+
+<!-- ============ 底池 ============ -->
+<div class="section">
+  <div class="section-title">
+    💰 当前底池
+    <span class="hint">填写后自动重算</span>
+  </div>
+  <div class="pot-row">
+    <input type="number" id="potInput" placeholder="0" inputmode="decimal" step="0.5" min="0">
+    <span class="unit">BB</span>
+  </div>
+</div>
+
+<div class="auto-row">
+  <div>⚡ 自动出建议 <span style="color:#666;font-size:12px">（选牌后无需点击）</span></div>
+  <label class="switch">
+    <input type="checkbox" id="autoSwitch" checked onchange="toggleAuto()">
+    <span class="slider"></span>
+  </label>
+</div>
+
+<button class="big-btn" id="adviceBtn" onclick="getAdvice()">🤖 立即获取建议</button>
+<button class="clear-btn" onclick="clearAll()">🗑 清空牌面（保留筹码/类型）</button>
+
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-card">
+    <div class="popup-head">
+      <div class="popup-title">🤖 AI 建议</div>
+      <button class="popup-close" onclick="closePopup()">✕</button>
+    </div>
+    <div class="popup-body" id="popupBody"></div>
+  </div>
+</div>
+
+<div class="picker-overlay" id="pickerOverlay">
+  <div class="picker-head">
+    <div class="picker-title" id="pickerTitle">选择</div>
+    <button class="picker-close" onclick="closePicker()">✕</button>
+  </div>
+  <div class="picker-grid" id="pickerGrid"></div>
+</div>
+
+<script>
+/* ============================================================
+   常量与类型库
+   ============================================================ */
+const RANKS = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+const SUITS = [
+  { key:'s', sym:'♠', cls:'blk' },
+  { key:'h', sym:'♥', cls:'red' },
+  { key:'d', sym:'♦', cls:'red' },
+  { key:'c', sym:'♣', cls:'blk' }
+];
+const POSITIONS = ['UTG','UTG+1','MP','HJ','CO','BTN','SB','BB'];
+
+const PLAYER_TYPES = {
+  lag: {
+    name:'松凶疯魔', emoji:'🔥',
+    stats:{ vpip:55, pfr:40, threebet:15, af:4.0, wtsd:32 },
+    banner:'高频加注 · 极强攻击性 —— 收紧范围，让他们自己撞墙',
+    traits:'入池极宽，疯狂加注，诈唬频率高，攻击性极强',
+    exploit:`1. 收紧跟注范围，用强牌让他们自己把钱送进来
+2. 不要和他们打空气对空气，让他们诈唬
+3. 用顶对以上做大底池，他们很难放弃
+4. 面对他们的 3Bet，只用强牌 4Bet 反击
+5. 有强牌时不要慢打，直接加注建池
+6. 避免打边缘牌，等待好机会收割`
+  },
+  fish: {
+    name:'买牌铁头疯鱼', emoji:'🐟',
+    stats:{ vpip:65, pfr:8, threebet:3, af:0.8, wtsd:45 },
+    banner:'爱追听 · 不弃牌 · 偶尔乱加 —— 价值最大化，绝不诈唬',
+    traits:'喜欢追听牌（不看赔率）、铁头不弃牌（顶对以下也跟大注）、偶尔乱加注、摊牌范围极宽',
+    exploit:`1. 绝不诈唬——他们不弃牌，诈唬等于送钱
+2. 顶对以上价值最大化——直接打 75-100% 底池
+3. 两对以上直接建池，目标打光筹码
+4. 中pair/弱顶对控池，下注 33% 或过牌
+5. 强听牌不要慢打，直接下注收价值
+6. 强牌不要设陷阱，直接下注
+7. 面对突然大加注要谨慎——疯鱼的突然大加往往是真强牌
+8. 翻前用强牌隔离加注，不用边缘牌偷盲`
+  },
+  calling_station: {
+    name:'跟注站', emoji:'📞',
+    stats:{ vpip:45, pfr:10, threebet:3, af:0.6, wtsd:42 },
+    banner:'只跟不加 · 范围极宽 · 被动 —— 只做价值，不给诈唬',
+    traits:'极少主动加注，跟注范围极宽，被动跟到底，摊牌要求低',
+    exploit:`1. 完全放弃诈唬——加注几乎全是价值
+2. 价值下注尺度可以很大（75-100% 底池）
+3. 薄价值也要打：第二对子都可以下注 50%
+4. 被突然加注要高度警惕——跟注站的加注通常是很强的牌
+5. 翻前用强牌加注建池，不用诈唬性 3Bet
+6. 有位置时打更多`
+  },
+  loose_passive: {
+    name:'松弱鱼', emoji:'🫧',
+    stats:{ vpip:40, pfr:15, threebet:4, af:0.9, wtsd:38 },
+    banner:'入池宽 · 攻击性低 —— 价值拉满，不给诈唬',
+    traits:'入池范围宽但很少加注，偏向跟注，摊牌要求低',
+    exploit:`1. 完全放弃诈唬——他们跟注太多
+2. 顶对以上直接打大注 75% 底池
+3. 中pair可以薄价值下注 50%
+4. 翻前用强牌隔离，建立大底池
+5. 被加注时尊重，但可以比疯鱼更宽松地跟注
+6. 有位置时扩大价值下注范围`
+  },
+  reg: {
+    name:'常规常客', emoji:'🎯',
+    stats:{ vpip:25, pfr:20, threebet:8, af:2.5, wtsd:28 },
+    banner:'标准 TAG · 有平衡 —— 按 GTO 基准打，减少漏洞',
+    traits:'打法均衡，有位置意识，会做价值也会诈唬',
+    exploit:`1. 按标准策略执行，减少明显漏洞
+2. 翻前用位置优势扩大开池
+3. 翻后混合价值与诈唬，注意频率平衡
+4. 尊重他们的 3Bet 和加注
+5. 寻找其位置偏差做针对性剥削`
+  },
+  tag: {
+    name:'紧凶常客', emoji:'🗡️',
+    stats:{ vpip:24, pfr:20, threebet:6, af:2.8, wtsd:28 },
+    banner:'紧凶有位置意识 · 有攻击性 —— 需要范围优势才能对抗',
+    traits:'翻前较紧，翻后主动下注，有位置意识，攻击性中等偏强',
+    exploit:`1. 尊重他们的开池和持续下注，避免用边缘牌硬碰
+2. 用位置反击——他们在盲注位弃牌率不低
+3. 翻前用强牌 3Bet，减少跟注以免被位置压制
+4. 翻后遇到多条街下注，只用强牌继续
+5. 不要在他们面前频繁诈唬，他们能识破`
+  },
+  nit_pro: {
+    name:'紧凶职业', emoji:'🎖️',
+    stats:{ vpip:19, pfr:17, threebet:7, af:2.8, wtsd:25 },
+    banner:'紧而精准 · 技术扎实 —— 别送钱，等他犯错',
+    traits:'入池范围很紧但加注率高，技术扎实，弃牌率适中，翻后决策精准',
+    exploit:`1. 尊重他们的加注——他们的强牌是真的强
+2. 用位置控制底池，避免打大池
+3. 他们弃牌率不高不低，翻牌小注试探即可
+4. 被他们 3Bet 时果断弃掉边缘牌
+5. 寻找其漏洞：某些职业对 4Bet 弃牌率过高，可用强牌 4Bet 施压
+6. 不要在无位置时用边缘牌对抗`
+  },
+  pro: {
+    name:'职业常客', emoji:'🏆',
+    stats:{ vpip:25, pfr:21, threebet:9, af:3.0, wtsd:27 },
+    banner:'技术全面 · 有平衡 · 会剥削 —— 减少漏洞，别被针对',
+    traits:'打法成熟，翻前翻后都平衡，懂得利用位置与对手漏洞',
+    exploit:`1. 按标准/接近 GTO 策略执行，避免明显漏洞
+2. 翻前收紧跟注范围，多用 3Bet 争夺主动权
+3. 翻后注意下注尺度平衡，别暴露牌力
+4. 尊重他们在位置的施压，弃掉边缘牌
+5. 观察他们对哪些位置过紧/过松，做针对性剥削
+6. 避免和他们打大底池，除非你有强牌`
+  },
+  shark: {
+    name:'顶尖高手', emoji:'🦈',
+    stats:{ vpip:28, pfr:24, threebet:12, af:3.5, wtsd:28 },
+    banner:'松凶 · 高胜率 · 极强剥削 —— 减少对抗，只打强牌',
+    traits:'入池范围较宽但胜率极高，攻击性强，会做高级诈唬和薄价值，能读牌',
+    exploit:`1. 减少正面对抗——和他们打牌需要极强牌力
+2. 只用顶端范围继续，边缘强牌也会被剥削
+3. 翻前避免无谓跟注，宁可弃牌也不要陷入困难局面
+4. 尊重他们的大注——可能是价值也可能是诈唬，但频率平衡
+5. 用位置优势控制底池，避免打大池
+6. 找其他更弱的对手作为主要目标`
+  },
+  tight_passive: {
+    name:'紧弱常客', emoji:'🐢',
+    stats:{ vpip:22, pfr:15, threebet:5, af:1.2, wtsd:28 },
+    banner:'紧但被动 · 跟多打少 —— 可控池，可剥削',
+    traits:'翻前较紧，翻后偏向跟注，很少主动加注施压',
+    exploit:`1. 可以适度诈唬——他们弃牌率尚可
+2. 用位置持续下注，翻牌 33-50% 即可拿下
+3. 他们加注时放弃中等牌力
+4. 价值下注 50-66% 底池
+5. 翻前可扩大偷盲范围`
+  },
+  rock: {
+    name:'岩石 / 紧弱', emoji:'🪨',
+    stats:{ vpip:14, pfr:11, threebet:4, af:2.0, wtsd:24 },
+    banner:'只玩强牌 · 弃牌率高 · 被动 —— 偷盲优先，被跟就撤',
+    traits:'入池范围极窄，弃牌率高，被加注后基本放弃边缘牌',
+    exploit:`1. 可以高频偷盲——他们弃牌太多
+2. 被跟注后放弃边缘牌，别硬拼
+3. 被加注直接弃掉中等牌力
+4. 用位置持续施压，翻后小注试探即可
+5. 他们主动加注时尊重，通常是真强牌
+6. 不要在他们面前做多街诈唬`
+  }
+};
+
+const TYPE_ORDER = ['lag','fish','calling_station','loose_passive','reg','tag','nit_pro','pro','shark','tight_passive','rock'];
+
+/* ============================================================
+   状态
+   ============================================================ */
+let state = {
+  hand: [null, null],
+  board: [null, null, null, null, null],
+  position: 'BTN',
+  pot: 0,
+  pickerMode: null,
+  pickerSlot: 0,
+  oppType: 'fish',
+  heroStack: 100,
+  villainStack: 100,
+  ante: 0,
+  autoAdvice: true
+};
+
+let autoTimer = null;
+let currentAbort = null;
+let lastRequestKey = '';
+
+/* ============================================================
+   前注调整逻辑
+   ============================================================ */
+function getAnte() {
+  const a = parseFloat(document.getElementById('anteInput').value);
+  return isNaN(a) || a < 0 ? 0 : a;
+}
+
+/* 前注带来的 VPIP 膨胀量（百分点） */
+function getAnteBoost() {
+  const ante = getAnte();
+  if (ante <= 0) return 0;
+  // 每 0.25 BB 前注 ≈ +2% VPIP（经验值，最高 +12%）
+  return Math.min(12, Math.round(ante * 8));
+}
+
+function renderBlindInfo() {
+  const ante = getAnte();
+  const el = document.getElementById('blindInfo');
+  if (ante <= 0) {
+    el.className = 'spr-info';
+    el.innerHTML = '无前注 · 标准判断阈值';
+  } else {
+    const boost = getAnteBoost();
+    el.className = 'spr-info warn';
+    el.innerHTML = '前注 <b>' + ante + ' BB</b> ｜ 入池率阈值上移 <b>+' + boost + '%</b>（扣除前注膨胀后判断）';
+  }
+}
+
+/* ============================================================
+   持久化
+   ============================================================ */
+function persist() {
+  try {
+    localStorage.setItem('nlhe_opp_type', state.oppType);
+    localStorage.setItem('nlhe_hero_stack', String(state.heroStack));
+    localStorage.setItem('nlhe_villain_stack', String(state.villainStack));
+    localStorage.setItem('nlhe_ante', String(state.ante));
+    localStorage.setItem('nlhe_auto', state.autoAdvice ? '1' : '0');
+    localStorage.setItem('nlhe_hud', JSON.stringify(getHudValues()));
+  } catch (e) {}
+}
+
+function restore() {
+  try {
+    const t = localStorage.getItem('nlhe_opp_type');
+    if (t && PLAYER_TYPES[t]) state.oppType = t;
+    const hs = parseFloat(localStorage.getItem('nlhe_hero_stack'));
+    if (!isNaN(hs) && hs > 0) state.heroStack = hs;
+    const vs = parseFloat(localStorage.getItem('nlhe_villain_stack'));
+    if (!isNaN(vs) && vs > 0) state.villainStack = vs;
+    const ante = parseFloat(localStorage.getItem('nlhe_ante'));
+    if (!isNaN(ante) && ante >= 0) state.ante = ante;
+    state.autoAdvice = localStorage.getItem('nlhe_auto') !== '0';
+    const hud = JSON.parse(localStorage.getItem('nlhe_hud') || '{}');
+    if (hud.vpip != null) document.getElementById('hudVpip').value = hud.vpip;
+    if (hud.pfr != null) document.getElementById('hudPfr').value = hud.pfr;
+    if (hud.threebet != null) document.getElementById('hud3bet').value = hud.threebet;
+    if (hud.af != null) document.getElementById('hudAf').value = hud.af;
+    if (hud.wtsd != null) document.getElementById('hudWtsd').value = hud.wtsd;
+  } catch (e) {}
+  document.getElementById('heroStack').value = state.heroStack;
+  document.getElementById('villainStack').value = state.villainStack;
+  document.getElementById('anteInput').value = state.ante > 0 ? state.ante : '';
+  document.getElementById('autoSwitch').checked = state.autoAdvice;
+}
+
+/* ============================================================
+   API Key
+   ============================================================ */
+function toggleKeyPanel() {
+  const p = document.getElementById('keyPanel');
+  const a = document.getElementById('keyArrow');
+  p.classList.toggle('open');
+  a.textContent = p.classList.contains('open') ? '▲' : '▼';
+}
+function setKeyStatus(t, color) {
+  const el = document.getElementById('keyStatus');
+  el.textContent = t; el.style.color = color || '#a78bfa';
+}
+function getApiKey() {
+  try { return localStorage.getItem('deepseek_api_key') || ''; } catch (e) { return ''; }
+}
+function updateKeyStrip() {
+  const k = getApiKey();
+  const dot = document.getElementById('keyDot');
+  const txt = document.getElementById('keyStripText');
+  if (k && k.startsWith('sk-')) {
+    dot.classList.add('ok');
+    txt.textContent = '✅ API Key 已保存 (' + k.slice(0, 6) + '...' + k.slice(-4) + ')';
+  } else {
+    dot.classList.remove('ok');
+    txt.textContent = '⚠️ 未设置 API Key，点击展开设置';
+  }
+}
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k) { setKeyStatus('❌ 输入框为空', '#ef4444'); return; }
+  if (!k.startsWith('sk-')) { setKeyStatus('❌ Key 应以 sk- 开头', '#ef4444'); return; }
+  try {
+    localStorage.setItem('deepseek_api_key', k);
+    setKeyStatus('✅ 已保存 (' + k.length + ' 字符)', '#10b981');
+    updateKeyStrip();
+    setTimeout(() => toggleKeyPanel(), 600);
+    scheduleAutoAdvice();
+  } catch (e) { setKeyStatus('❌ 保存失败：' + e.message, '#ef4444'); }
+}
+async function testApi() {
+  const key = getApiKey();
+  if (!key) { setKeyStatus('⚠️ 请先保存 Key', '#ef4444'); return; }
+  setKeyStatus('⏳ 测试中...', '#a78bfa');
+  try {
+    const r = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: '回复OK' }], max_tokens: 10 })
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      let m = '❌ HTTP ' + r.status;
+      if (r.status === 401) m += ' · Key 无效';
+      else if (r.status === 402) m += ' · 余额不足';
+      else if (r.status === 429) m += ' · 请求过频';
+      setKeyStatus(m + ' · ' + t.slice(0, 80), '#ef4444');
+      return;
+    }
+    const d = await r.json();
+    setKeyStatus('✅ 连接成功 · ' + (d.choices?.[0]?.message?.content || 'OK'), '#10b981');
+  } catch (e) {
+    setKeyStatus('❌ 请求异常：' + e.message, '#ef4444');
+  }
+}
+
+/* ============================================================
+   对手类型
+   ============================================================ */
+function renderTypeButtons() {
+  const grid = document.getElementById('typeGrid');
+  grid.innerHTML = '';
+  TYPE_ORDER.forEach(k => {
+    const t = PLAYER_TYPES[k];
+    if (!t) return;
+    const btn = document.createElement('button');
+    btn.className = 'type-btn' + (state.oppType === k ? ' active' : '');
+    btn.innerHTML = '<span class="emo">' + t.emoji + '</span>' + t.name;
+    btn.onclick = () => selectType(k);
+    grid.appendChild(btn);
+  });
+  updateBanner();
+}
+
+function selectType(k) {
+  state.oppType = k;
+  const t = PLAYER_TYPES[k];
+  document.getElementById('hudVpip').value = t.stats.vpip;
+  document.getElementById('hudPfr').value = t.stats.pfr;
+  document.getElementById('hud3bet').value = t.stats.threebet;
+  document.getElementById('hudAf').value = t.stats.af;
+  document.getElementById('hudWtsd').value = t.stats.wtsd;
+  renderTypeButtons();
+  renderTypeResult(true);
+  persist();
+  scheduleAutoAdvice();
+}
+
+function getHudValues() {
+  const g = id => {
+    const v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? null : v;
+  };
+  return { vpip: g('hudVpip'), pfr: g('hudPfr'), threebet: g('hud3bet'), af: g('hudAf'), wtsd: g('hudWtsd') };
+}
+
+/* ============================================================
+   核心判断（含前注调整）
+   ============================================================ */
+function judgeType(h) {
+  const rawVpip = h.vpip;
+  if (rawVpip == null) return 'reg';
+
+  /* 扣除前注带来的 VPIP 膨胀，得到"等效无前注 VPIP" */
+  const boost = getAnteBoost();
+  const vpip = Math.max(0, rawVpip - boost);
+
+  const pfr  = h.pfr  != null ? Math.max(0, h.pfr - Math.round(boost * 0.6)) : vpip * 0.7;
+  const af   = h.af   != null ? h.af   : 2.0;
+  const tb   = h.threebet != null ? h.threebet : 5;
+  const gap  = vpip - pfr;
+
+  /* ---------- 超松区 VPIP ≥ 50 ---------- */
+  if (vpip >= 50) {
+    if (pfr >= 28 && af >= 2.5) return 'lag';
+    if (af >= 1.5) return 'fish';
+    if (af < 1.2) return 'calling_station';
+    return gap >= 30 ? 'calling_station' : 'fish';
+  }
+  /* ---------- 松区 36-49 ---------- */
+  if (vpip >= 36) {
+    if (pfr >= 26 && af >= 2.5) return 'lag';
+    if (pfr >= 22 && af >= 2.2) return 'lag';
+    if (af < 1.3) return 'calling_station';
+    return 'loose_passive';
+  }
+  /* ---------- 中松区 29-35 ---------- */
+  if (vpip >= 29) {
+    if (pfr >= 22 && tb >= 11 && af >= 3.0) return 'shark';
+    if (pfr >= 24 && af >= 2.5) return 'lag';
+    if (af < 1.4) return 'calling_station';
+    if (pfr >= 20 && tb >= 8 && af >= 2.5) return 'pro';
+    return 'reg';
+  }
+  /* ---------- 标准区 23-28 ---------- */
+  if (vpip >= 23) {
+    if (pfr >= 22 && tb >= 11 && af >= 3.0) return 'shark';
+    if (pfr >= 20 && tb >= 8 && af >= 2.6) return 'pro';
+    if (pfr >= 19 && af >= 2.4) return 'tag';
+    if (af < 1.4) return 'tight_passive';
+    if (pfr >= 18 && af >= 2.2) return 'tag';
+    return 'reg';
+  }
+  /* ---------- 紧凶区 16-22 ---------- */
+  if (vpip >= 16) {
+    if (pfr >= 15 && tb >= 7 && af >= 2.5) return 'nit_pro';
+    if (pfr >= 14 && af >= 2.2) return 'tag';
+    if (af < 1.4) return 'tight_passive';
+    if (pfr >= 13 && af >= 1.8) return 'nit_pro';
+    return 'tight_passive';
+  }
+  /* ---------- 超紧区 < 16 ---------- */
+  return 'rock';
+}
+
+function judgeByHud() {
+  const h = getHudValues();
+  if (h.vpip == null) {
+    document.getElementById('typeResult').innerHTML = '⚠️ 请至少填写 <b>入池率</b>';
+    return;
+  }
+  const key = judgeType(h);
+  state.oppType = key;
+  renderTypeButtons();
+  renderTypeResult(false, h);
+  persist();
+  scheduleAutoAdvice();
+}
+
+function renderTypeResult(preset, hud) {
+  const t = PLAYER_TYPES[state.oppType];
+  const el = document.getElementById('typeResult');
+  if (preset) {
+    el.innerHTML = '已选定：<b>' + t.emoji + ' ' + t.name + '</b><br><span style="color:#888;font-size:12px">' + t.banner + '</span>';
+    return;
+  }
+  const h = hud || getHudValues();
+  const boost = getAnteBoost();
+  const parts = [];
+  if (h.vpip != null) parts.push('入池率 ' + h.vpip + '%');
+  if (h.pfr != null) parts.push('翻前加注 ' + h.pfr + '%');
+  if (h.threebet != null) parts.push('3Bet ' + h.threebet + '%');
+  if (h.af != null) parts.push('激进度 ' + h.af);
+  if (h.wtsd != null) parts.push('摊牌率 ' + h.wtsd + '%');
+  const adjLine = boost > 0
+    ? '<br><span style="color:#fbbf24;font-size:11px">前注调整：扣除 ' + boost + '% 膨胀 → 等效入池率 ' + Math.max(0, h.vpip - boost) + '%</span>'
+    : '';
+  el.innerHTML = '📊 ' + parts.join(' / ') + adjLine + '<br>判定：<b>' + t.emoji + ' ' + t.name + '</b><br><span style="color:#888;font-size:12px">' + t.banner + '</span>';
+}
+
+function updateBanner() {
+  const t = PLAYER_TYPES[state.oppType] || PLAYER_TYPES.fish;
+  document.getElementById('oppBannerName').textContent = t.emoji + ' ' + t.name;
+  document.getElementById('oppBannerDesc').textContent = t.banner;
+}
+
+/* ============================================================
+   筹码 / SPR
+   ============================================================ */
+function readStacks() {
+  const hs = parseFloat(document.getElementById('heroStack').value);
+  const vs = parseFloat(document.getElementById('villainStack').value);
+  const a  = parseFloat(document.getElementById('anteInput').value);
+  if (!isNaN(hs) && hs > 0) state.heroStack = hs;
+  if (!isNaN(vs) && vs > 0) state.villainStack = vs;
+  if (!isNaN(a) && a >= 0) state.ante = a;
+}
+
+function renderSpr() {
+  readStacks();
+  const eff = Math.min(state.heroStack, state.villainStack);
+  const pot = parseFloat(document.getElementById('potInput').value) || 0;
+  const el = document.getElementById('sprInfo');
+  if (pot > 0) {
+    const spr = eff / pot;
+    el.className = 'spr-info';
+    el.innerHTML = '有效筹码 <b>' + eff + ' BB</b> ｜ 底池 <b>' + pot + ' BB</b> ｜ SPR <b>' + spr.toFixed(1) + '</b> ｜ ' + sprTip(spr);
+  } else {
+    el.className = 'spr-info';
+    el.innerHTML = '有效筹码 <b>' + eff + ' BB</b> ｜ 填入底池后计算 SPR';
+  }
+}
+
+function sprTip(spr) {
+  if (spr <= 2) return '极低 SPR · 顶对即可打光';
+  if (spr <= 4) return '低 SPR · 顶对好踢脚可打光';
+  if (spr <= 7) return '中 SPR · 需要两对以上';
+  if (spr <= 12) return '高 SPR · 需要强牌/坚果';
+  return '极高 SPR · 只打坚果与强听牌';
+}
+
+/* ============================================================
+   初始化
+   ============================================================ */
+function loadKey() {
+  const k = getApiKey();
+  if (k) document.getElementById('apiKeyInput').value = k;
+  updateKeyStrip();
+}
+
+function renderPositionButtons() {
+  const row = document.getElementById('posRow');
+  row.innerHTML = '';
+  POSITIONS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'pos-btn' + (p === state.position ? ' active' : '');
+    btn.textContent = p;
+    btn.onclick = () => {
+      state.position = p;
+      renderPositionButtons();
+      scheduleAutoAdvice();
+    };
+    row.appendChild(btn);
+  });
+}
+
+/* ============================================================
+   选牌面板
+   ============================================================ */
+function openPicker(mode, slot) {
+  state.pickerMode = mode;
+  state.pickerSlot = slot;
+  const overlay = document.getElementById('pickerOverlay');
+  const grid = document.getElementById('pickerGrid');
+  const title = document.getElementById('pickerTitle');
+  title.textContent = mode === 'hand' ? '选择我的手牌' : '选择公共牌';
+
+  const used = [];
+  state.hand.forEach((c, i) => { if (c && !(mode === 'hand' && i === slot)) used.push(c.rank + c.sym); });
+  state.board.forEach((c, i) => { if (c && !(mode === 'board' && i === slot)) used.push(c.rank + c.sym); });
+
+  grid.innerHTML = '';
+  SUITS.forEach(s => {
+    const col = document.createElement('div');
+    col.className = 'picker-col';
+    const head = document.createElement('div');
+    head.className = 'picker-suit-head ' + s.cls;
+    head.textContent = s.sym;
+    col.appendChild(head);
+    RANKS.forEach(r => {
+      const btn = document.createElement('button');
+      btn.className = 'picker-btn ' + s.cls;
+      if (used.includes(r + s.sym)) btn.classList.add('used');
+      btn.innerHTML = '<span class="r">' + r + '</span><span class="s">' + s.sym + '</span>';
+      btn.onclick = () => selectCard(r, s, mode, slot);
+      col.appendChild(btn);
+    });
+    grid.appendChild(col);
+  });
+  overlay.classList.add('show');
+}
+
+function closePicker() {
+  document.getElementById('pickerOverlay').classList.remove('show');
+}
+
+function selectCard(rank, suit, mode, slot) {
+  const card = { rank, suit: suit.key, sym: suit.sym, cls: suit.cls };
+  if (mode === 'hand') state.hand[slot] = card;
+  else state.board[slot] = card;
+  renderSlots();
+  closePicker();
+  scheduleAutoAdvice();
+}
+
+function renderSlots() {
+  const handSlots = document.querySelectorAll('#handSlots .card-slot');
+  state.hand.forEach((c, i) => {
+    const el = handSlots[i];
+    if (c) {
+      el.className = 'card-slot filled ' + c.cls;
+      el.innerHTML = '<div><div class="rank">' + c.rank + '</div><div class="suit">' + c.sym + '</div></div>';
+    } else {
+      el.className = 'card-slot';
+      el.textContent = '?';
+    }
+  });
+
+  const boardSlots = document.querySelectorAll('#boardSlots .card-slot');
+  state.board.forEach((c, i) => {
+    const el = boardSlots[i];
+    el.style.width = '64px';
+    el.style.height = '88px';
+    if (c) {
+      el.className = 'card-slot filled ' + c.cls;
+      el.innerHTML = '<div><div class="rank" style="font-size:26px">' + c.rank + '</div><div class="suit" style="font-size:20px">' + c.sym + '</div></div>';
+    } else {
+      el.className = 'card-slot';
+      el.textContent = '—';
+    }
+  });
+}
+
+/* ============================================================
+   清空（保留筹码/类型/前注）
+   ============================================================ */
+function clearAll() {
+  state.hand = [null, null];
+  state.board = [null, null, null, null, null];
+  state.pot = 0;
+  state.position = 'BTN';
+  document.getElementById('potInput').value = '';
+  closePopup();
+  renderSlots();
+  renderPositionButtons();
+  renderSpr();
+  lastRequestKey = '';
+}
+
+/* ============================================================
+   自动建议
+   ============================================================ */
+function toggleAuto() {
+  state.autoAdvice = document.getElementById('autoSwitch').checked;
+  persist();
+  if (state.autoAdvice) scheduleAutoAdvice();
+}
+
+function canRequest() {
+  if (!getApiKey()) return false;
+  if (!state.hand[0] || !state.hand[1]) return false;
+  const bc = state.board.filter(c => c).length;
+  if (bc !== 0 && bc !== 3 && bc !== 4 && bc !== 5) return false;
+  return true;
+}
+
+function situationKey() {
+  const h = state.hand.map(c => c ? c.rank + c.sym : '-').join('');
+  const b = state.board.map(c => c ? c.rank + c.sym : '-').join('');
+  const pot = document.getElementById('potInput').value || '0';
+  return [h, b, state.position, pot, state.oppType, state.heroStack, state.villainStack, state.ante].join('|');
+}
+
+function scheduleAutoAdvice() {
+  renderSpr();
+  renderBlindInfo();
+  if (!state.autoAdvice) return;
+  clearTimeout(autoTimer);
+  autoTimer = setTimeout(() => {
+    if (!canRequest()) return;
+    const key = situationKey();
+    if (key === lastRequestKey) return;
+    lastRequestKey = key;
+    getAdvice(true);
+  }, 700);
+}
+
+/* ============================================================
+   弹窗
+   ============================================================ */
+function openPopup() { document.getElementById('popupOverlay').classList.add('show'); }
+function closePopup() { document.getElementById('popupOverlay').classList.remove('show'); }
+
+function popupLoading() {
+  openPopup();
+  document.getElementById('popupBody').innerHTML = '<div class="advice-loading">⏳ 正在请求 DeepSeek...</div>';
+}
+function popupAdvice(action, detail, meta) {
+  openPopup();
+  document.getElementById('popupBody').innerHTML =
+    '<div class="advice-action">' + action + '</div>' +
+    (detail ? '<div class="advice-detail">' + detail.replace(/</g, '&lt;') + '</div>' : '') +
+    (meta ? '<div class="advice-meta">' + meta + '</div>' : '');
+}
+function popupError(msg) {
+  openPopup();
+  document.getElementById('popupBody').innerHTML = '<div class="advice-error">' + msg.replace(/</g, '&lt;') + '</div>';
+}
+
+/* ============================================================
+   获取建议
+   ============================================================ */
+async function getAdvice(isAuto) {
+  const key = getApiKey();
+  if (!key) { if (!isAuto) popupError('⚠️ 请先在顶部展开设置 API Key'); return; }
+
+  if (!state.hand[0] || !state.hand[1]) { if (!isAuto) popupError('⚠️ 请先选择你的 2 张手牌'); return; }
+
+  const boardCards = state.board.filter(c => c);
+  if (boardCards.length !== 0 && boardCards.length < 3) {
+    if (!isAuto) popupError('⚠️ 公共牌必须是 0 张、3 张、4 张或 5 张');
+    return;
+  }
+
+  state.pot = parseFloat(document.getElementById('potInput').value) || 0;
+  readStacks();
+
+  const btn = document.getElementById('adviceBtn');
+  if (!isAuto) { btn.disabled = true; btn.textContent = '🤖 思考中...'; }
+  popupLoading();
+
+  if (currentAbort) currentAbort.abort();
+  currentAbort = new AbortController();
+
+  try {
+    const resp = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      signal: currentAbort.signal,
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: buildSystemPrompt() },
+          { role: 'user', content: buildSituation() }
+        ],
+        temperature: 0.25,
+        max_tokens: 320
+      })
+    });
+
+    if (!resp.ok) {
+      const t = await resp.text();
+      let msg = 'HTTP ' + resp.status;
+      if (resp.status === 401) msg = 'API Key 无效';
+      else if (resp.status === 402) msg = '余额不足，请充值';
+      else if (resp.status === 429) msg = '请求过于频繁，请稍后';
+      popupError('❌ ' + msg);
+      return;
+    }
+
+    const data = await resp.json();
+    const raw = data.choices?.[0]?.message?.content?.trim() || '（无返回）';
+
+    const mAct = raw.match(/行动[:：]\s*([^\n]+)/);
+    const action = mAct ? mAct[1].trim() : raw.split('\n')[0];
+    const mReason = raw.match(/理由[:：]\s*([\s\S]*?)(?=\n置信度[:：]|$)/);
+    const reason = mReason ? mReason[1].trim() : '';
+    const mConf = raw.match(/置信度[:：]\s*(\d+)/);
+    const conf = mConf ? mConf[1] : '';
+
+    const t = PLAYER_TYPES[state.oppType];
+    const eff = Math.min(state.heroStack, state.villainStack);
+    const spr = state.pot > 0 ? (eff / state.pot).toFixed(1) : '—';
+    const ante = getAnte();
+    const meta = '对手：' + t.emoji + ' ' + t.name +
+                 ' ｜ 有效筹码 ' + eff + 'BB' +
+                 ' ｜ SPR ' + spr +
+                 (ante > 0 ? ' ｜ 前注 ' + ante + 'BB' : '') +
+                 (conf ? '<br>置信度：' + conf : '');
+
+    popupAdvice(action, reason, meta);
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+    popupError('❌ 请求失败：' + e.message + '\n请检查网络');
+  } finally {
+    if (!isAuto) { btn.disabled = false; btn.textContent = '🤖 立即获取建议'; }
+  }
+}
+
+/* ============================================================
+   局面描述（含前注信息）
+   ============================================================ */
+function buildSituation() {
+  const hand = state.hand.map(c => c.rank + c.sym).join(' ');
+  const board = state.board.filter(c => c).map(c => c.rank + c.sym).join(' ');
+  const boardCount = state.board.filter(c => c).length;
+
+  let street = '翻牌前';
+  if (boardCount === 3) street = '翻牌';
+  else if (boardCount === 4) street = '转牌';
+  else if (boardCount === 5) street = '河牌';
+
+  const eff = Math.min(state.heroStack, state.villainStack);
+  const spr = state.pot > 0 ? (eff / state.pot).toFixed(1) : '未知（底池未填）';
+  const ante = getAnte();
+
+  const t = PLAYER_TYPES[state.oppType];
+  const hud = getHudValues();
+  const hudLine = [
+    hud.vpip != null ? '入池率 ' + hud.vpip + '%' : '',
+    hud.pfr != null ? '翻前加注 ' + hud.pfr + '%' : '',
+    hud.threebet != null ? '3Bet ' + hud.threebet + '%' : '',
+    hud.af != null ? '激进度 ' + hud.af : '',
+    hud.wtsd != null ? '摊牌率 ' + hud.wtsd + '%' : ''
+  ].filter(Boolean).join(' / ') || '未提供';
+
+  const anteLine = ante > 0
+    ? `▶ 前注/抓头: ${ante} BB（每手额外死钱，底池赔率改善，对手会打得更松）`
+    : '▶ 前注/抓头: 无';
+
+  return `【8-Max NLHE 局面】
+
+▶ 我的手牌: ${hand}
+▶ 我的位置: ${state.position}
+▶ 公共牌: ${board || '无'}
+▶ 当前街道: ${street}
+▶ 当前底池: ${state.pot} BB
+▶ 我的筹码: ${state.heroStack} BB
+▶ 对手筹码: ${state.villainStack} BB
+▶ 有效筹码: ${eff} BB
+▶ SPR: ${spr}
+${anteLine}
+
+▶ 对手类型: ${t.emoji} ${t.name}
+▶ 对手 HUD 数据: ${hudLine}
+▶ 对手特征: ${t.traits}
+
+请结合我的筹码深度、SPR 与是否有前注，给出此刻的最佳行动和具体尺度。`;
+}
+
+/* ============================================================
+   动态 System Prompt
+   ============================================================ */
+function buildSystemPrompt() {
+  const t = PLAYER_TYPES[state.oppType] || PLAYER_TYPES.fish;
+  const ante = getAnte();
+
+  const anteRule = ante > 0
+    ? `
+【本局有前注（${ante} BB）】
+- 底池起始死钱更多，跟注赔率更好，对手范围会比无前注时更宽
+- 价值下注尺度可略增大（多 5-10%），因为对手更愿意跟
+- 偷盲成功率下降，减少纯诈唬型偷盲
+- 翻前隔离加注尺度需加大（通常 4-5BB 起），以压缩多人底池
+- SPR 会因底池更大而降低，中强牌更愿意打光`
+    : '';
+
+  return `你是职业 NLHE 牌手，8-Max，专精剥削性策略与筹码深度（SPR）决策。
+
+【本局对手模型：${t.name}】
+特征：${t.traits}
+
+【针对该对手的核心剥削原则】
+${t.exploit}
+${anteRule}
+
+【筹码深度与 SPR 决策准则（重要）】
+- SPR ≤ 2：顶对好踢脚即可考虑打光；不慢打
+- SPR 3-4：顶对顶踢 / 超对可打光；听牌可半诈唬
+- SPR 5-7：需要两对以上才建大池；顶对控制底池
+- SPR 8-12：需要两对+ / 强听牌组合；边缘牌不玩大池
+- SPR > 12：只打坚果、大对子与强听牌；避免翻后被反超
+- 短筹码（<40BB）：翻前更倾向于直接全下或弃牌，减少翻后复杂决策
+- 深筹码（>150BB）：重视位置与坚果潜力，避免用边缘强牌打光
+
+【翻前原则】
+- 短筹码（<40BB）：收紧开池，用强牌直接 3Bet 全下
+- 标准筹码（40-150BB）：UTG/HJ 只有强牌开池（88+, AQ+, KQs）加注 3-4BB；CO/BTN 扩大开池
+- 深筹码（>150BB）：位置更重要，同花连牌与小对子价值提升
+- 面对加注：只用 AJs+, 99+ 3Bet（对鱼可用更宽的价值 3Bet，但不用诈唬 3Bet）
+
+【翻后原则】
+- 强牌（两对以上）→ 下注 66-100% 底池，目标打光
+- 顶对好踢脚 → 干燥面下注 66-75%；湿润面 75%
+- 中等牌（中pair/弱顶对）→ 控池，下注 33% 或过牌
+- 完全空气 → 过牌/弃牌，绝不用空气诈唬（尤其对跟注站/疯鱼）
+- 强听牌 → 半诈唬下注 50-66%
+- 对手大加注 → 根据 SPR 决定：低 SPR 可用顶对跟，高 SPR 只用两对以上
+
+【输出格式】严格按此，不要多余解释：
+行动：<弃牌|过牌|跟注XBB|下注XBB|加注到XBB|全下>
+理由：<2行以内，写清牌面+牌力+SPR依据+针对该对手的尺度理由>
+置信度：<0-100>`;
+}
+
+/* ============================================================
+   事件绑定
+   ============================================================ */
+document.getElementById('potInput').addEventListener('input', () => { renderSpr(); scheduleAutoAdvice(); });
+document.getElementById('heroStack').addEventListener('change', () => { renderSpr(); persist(); scheduleAutoAdvice(); });
+document.getElementById('villainStack').addEventListener('change', () => { renderSpr(); persist(); scheduleAutoAdvice(); });
+document.getElementById('anteInput').addEventListener('change', () => {
+  renderBlindInfo();
+  persist();
+  if (document.getElementById('hudVpip').value) judgeByHud();
+  scheduleAutoAdvice();
+});
+document.getElementById('anteInput').addEventListener('input', renderBlindInfo);
+
+document.getElementById('popupOverlay').addEventListener('click', e => {
+  if (e.target.id === 'popupOverlay') closePopup();
+});
+
+/* ============================================================
+   启动
+   ============================================================ */
+loadKey();
+restore();
+renderBlindInfo();
+renderTypeButtons();
+renderTypeResult(true);
+renderPositionButtons();
+renderSlots();
+renderSpr();
+</script>
+</body>
+</html>
